@@ -44,6 +44,12 @@ public class ConfluenceRestApi {
     }
 
     private static String getDataToPush() throws IOException {
-        return new String(Files.readAllBytes(Paths.get(getValue(FILE_PATH))));
+        // needed since https://confluence.atlassian.com/conf55/confluence-user-s-guide/creating-content/using-the-editor/working-with-macros/html-macro
+        String prepender = "<ac:structured-macro ac:name=\"html\">\n" +
+                "<ac:plain-text-body><![CDATA[";
+
+        String appender = "]]></ac:plain-text-body>\n" +
+                "</ac:structured-macro>";
+        return prepender + new String(Files.readAllBytes(Paths.get(getValue(FILE_PATH)))) + appender;
     }
 }
