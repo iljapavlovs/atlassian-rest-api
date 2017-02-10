@@ -16,7 +16,7 @@ import static atlassian.rest.api.Config.getValue;
 import static atlassian.rest.api.properties.ConfigProperty.PASSWORD;
 import static atlassian.rest.api.properties.ConfigProperty.USERNAME;
 
-
+//TODO - this class is just for reference purposes
 public class JiraRestApiCrud {
 
     public static final String JIRA_BASE_URL = "http://localhost:8080";

@@ -1,5 +1,6 @@
 package atlassian.rest.api;
 
+import atlassian.rest.api.exceptions.ConfluenceUpdaterException;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -7,10 +8,8 @@ import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.lang.StringUtils;
 
 import javax.naming.AuthenticationException;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 
 public class RestHelper {
@@ -22,7 +21,7 @@ public class RestHelper {
         WebResource webResource = client.resource(url);
         WebResource.Builder builder = setHeader(webResource, auth);
         response = builder.get(ClientResponse.class);
-        checkStatusCode();
+        ensureResponse(200, "Response is different from HTTP 200 status code");
         return response.getEntity(String.class);
     }
 
@@ -30,7 +29,7 @@ public class RestHelper {
         WebResource webResource = client.resource(url);
         WebResource.Builder builder = setHeader(webResource, auth);
         response = builder.post(ClientResponse.class, data);
-        checkStatusCode();
+        ensureResponse(201, "Response is different from HTTP 201 status code");
         return response.getEntity(String.class);
     }
 
@@ -38,14 +37,14 @@ public class RestHelper {
         WebResource webResource = client.resource(url);
         WebResource.Builder builder = setHeader(webResource, auth);
         response = builder.put(ClientResponse.class, data);
-        checkStatusCode();
+        ensureResponse(200,"Response is different from HTTP 200 status code");
     }
 
     public void invokeDeleteMethod(String auth, String url) throws AuthenticationException, ClientHandlerException, IOException {
         WebResource webResource = client.resource(url);
         WebResource.Builder builder = setHeader(webResource, auth);
         response = builder.delete(ClientResponse.class);
-        checkStatusCode();
+        ensureResponse(204,"Response is different from HTTP 204 status code");
     }
 
     public static String getContentRestUrl(String baseUrl, final Long contentId, final String[] expansions) throws UnsupportedEncodingException {
@@ -61,20 +60,13 @@ public class RestHelper {
         return builder;
     }
 
-    private void checkStatusCode() throws IOException, AuthenticationException {
+    public void ensureResponse(int expectedStatusCode, String failureMessage) {
         int statusCode = response.getStatus();
-        if(statusCode == 401) throw new AuthenticationException("Invalid Username or Password");
-
-        String firstDigit = Integer.toString(statusCode).substring(0, 1);
-        switch (firstDigit){
-            case "1":
-                break;
-            case "2":
-                break;
-            default:
-                throw new IOException("HTTP Status Code is: " + response.getStatus());
-
-        }
         System.out.println("HTTP Response Code: " + statusCode);
+        if (statusCode != expectedStatusCode) {
+            String responseBody;
+            responseBody = response.getEntity(String.class);
+            throw new ConfluenceUpdaterException(failureMessage + ": " + responseBody);
+        }
     }
 }
