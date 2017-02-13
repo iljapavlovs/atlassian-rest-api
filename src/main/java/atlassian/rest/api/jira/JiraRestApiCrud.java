@@ -1,8 +1,10 @@
 package atlassian.rest.api.jira;
 
+import atlassian.rest.api.Main;
 import atlassian.rest.api.RestHelper;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.core.util.Base64;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +20,7 @@ import static atlassian.rest.api.properties.ConfigProperty.USERNAME;
 
 //TODO - this class is just for reference purposes
 public class JiraRestApiCrud {
+    final static Logger logger = Logger.getLogger(JiraRestApiCrud.class);
 
     public static final String JIRA_BASE_URL = "http://localhost:8080";
     public static void main(String[] args) throws IOException, URISyntaxException {
@@ -27,20 +30,20 @@ public class JiraRestApiCrud {
         try {
             //Get Projects
             String projects = client.invokeGetMethod(encodedCredentials, JIRA_BASE_URL +"/rest/api/2/project");
-            System.out.println("Projects: " + projects);
+            logger.info("Projects: " + projects);
             JSONArray projectArray = new JSONArray(projects);
             for (int i = 0; i < projectArray.length(); i++) {
                 JSONObject proj = projectArray.getJSONObject(i);
-                System.out.println("Key:"+proj.getString("key")+", Name:"+proj.getString("name"));
+                logger.info("Key:"+proj.getString("key")+", Name:"+proj.getString("name"));
             }
 
             //Create Issue
             String createIssueData = "{\"fields\":{\"project\":{\"key\":\"DEMO\"},\"summary\":\"REST Test\",\"issuetype\":{\"name\":\"Bug\"}}}";
             String issue = client.invokePostMethod(encodedCredentials, JIRA_BASE_URL +"/rest/api/2/issue", createIssueData);
-            System.out.println(issue);
+            logger.info(issue);
             JSONObject issueObj = new JSONObject(issue);
             String newKey = issueObj.getString("key");
-            System.out.println("Key:"+newKey);
+            logger.info("Key:"+newKey);
 
             //Update Issue
             String editIssueData = "{\"fields\":{\"assignee\":{\"name\":\"test\"}}}";
@@ -49,16 +52,12 @@ public class JiraRestApiCrud {
             client.invokeDeleteMethod(encodedCredentials, JIRA_BASE_URL +"/rest/api/2/issue/DEMO-13");
 
         } catch (AuthenticationException e) {
-            System.out.println("Username or Password wrong!");
-            e.printStackTrace();
+            logger.error("Username or Password wrong: " + e);
         } catch (ClientHandlerException e) {
-            System.out.println("Error invoking REST method");
-            e.printStackTrace();
+            logger.error("Error invoking REST method: " + e);
         } catch (JSONException e) {
-            System.out.println("Invalid JSON output");
-            e.printStackTrace();
+            logger.error("Invalid JSON output: " + e);
         }
-
     }
 
 

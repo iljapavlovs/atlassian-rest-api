@@ -6,6 +6,7 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import javax.naming.AuthenticationException;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class RestHelper {
+    final static Logger logger = Logger.getLogger(RestHelper.class);
     private ClientResponse response;
     public static final String ENCODING = "utf-8";
     private Client client = Client.create();
@@ -62,7 +64,7 @@ public class RestHelper {
 
     public void ensureResponse(int expectedStatusCode, String failureMessage) {
         int statusCode = response.getStatus();
-        System.out.println("HTTP Response Code: " + statusCode);
+        logger.info("HTTP Response Code: " + statusCode);
         if (statusCode != expectedStatusCode) {
             String responseBody;
             responseBody = response.getEntity(String.class);
